@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gráficos de Ventas Interactivos</title>
+    <!-- Tailwind CSS for styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Chart.js for creating charts -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script>
+        // Applying the new color palette via Tailwind config
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'navy-deep': '#000814',
+                        'navy-medium': '#001d3d',
+                        'navy-light': '#003566',
+                        'gold-primary': '#ffc300',
+                        'gold-secondary': '#ffd60a',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+    </style>
+</head>
+<body class="bg-navy-deep text-gray-200 flex items-center justify-center min-h-screen p-4">
+
+    <div class="w-full max-w-4xl mx-auto bg-navy-medium rounded-2xl shadow-lg p-6 md:p-8">
+        
+        <!-- Main Title (Dynamically updated) -->
+        <div class="text-center mb-8">
+            <h1 id="mainTitle" class="text-2xl md:text-3xl font-bold text-gold-secondary">Reporte de Ventas</h1>
+            <p id="mainSubtitle" class="text-gray-300 mt-1">Haz clic en la barra del 2025 para ver el detalle por región.</p>
+        </div>
+
+        <!-- Chart Views Container -->
+        <div id="chartViewContainer">
+
+            <!-- View 1: Yearly Sales Chart -->
+            <div id="yearlySalesView">
+                <div class="bg-navy-deep p-6 rounded-xl">
+                    <h2 class="text-lg font-semibold text-center mb-4 text-gray-100">Volumen de Ventas Anual (toneladas)</h2>
+                    <div class="relative h-64 md:h-80">
+                        <canvas id="yearlySalesChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- View 2: Regional Sales Chart (Initially Hidden) -->
+            <div id="regionalSalesView" class="hidden">
+                 <div class="bg-navy-deep p-6 rounded-xl">
+                    <div class="flex justify-between items-center mb-4">
+                        <!-- Back Button -->
+                        <button id="backButton" class="text-sm font-medium text-gold-primary hover:text-gold-secondary flex items-center">
+                           <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+                           </svg>
+                           Volver
+                        </button>
+                        <h2 class="text-lg font-semibold text-center text-gray-100">Distribución de Ventas 2025</h2>
+                        <div class="w-16"></div> <!-- Spacer to keep title centered -->
+                    </div>
+                    <div class="relative h-72 md:h-80 flex justify-center">
+                        <canvas id="regionalSalesChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+    </div>
+
+    <script>
+        // --- DOM ELEMENT REFERENCES ---
+        const yearlyView = document.getElementById('yearlySalesView');
+        const regionalView = document.getElementById('regionalSalesView');
+        const backButton = document.getElementById('backButton');
+        const mainSubtitle = document.getElementById('mainSubtitle');
+
+        // --- DATA SETUP WITH NEW PALETTE ---
+        const yearlySalesData = {
+            labels: ['2024', '2025'],
+            datasets: [{
+                label: 'Volumen de Ventas (ton)',
+                data: [1500, 1950],
+                backgroundColor: [ '#003566', '#ffc300' ],
+                borderColor: [ '#003566', '#ffc300' ],
+                borderWidth: 1,
+                borderRadius: 8,
+            }]
+        };
+
+        const regionalSalesData2025 = {
+            labels: ['Bogotá', 'Medellín', 'Cali', 'Barranquilla'],
+            datasets: [{
+                label: 'Distribución de Ventas (%)',
+                data: [40, 25, 20, 15],
+                backgroundColor: [ '#ffc300', '#ffd60a', '#003566', '#001d3d' ],
+                borderColor: '#000814', // Using deep navy for border
+                borderWidth: 3,
+                hoverOffset: 4
+            }]
+        };
+
+        const textColor = '#DDDDDD'; // A light gray for better readability
+
+        // --- CHART CONFIGURATION ---
+        const yearlyChartOptions = {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: { 
+                y: { 
+                    beginAtZero: true, 
+                    title: { display: true, text: 'Toneladas', color: textColor },
+                    ticks: { color: textColor },
+                    grid: { color: 'rgba(255, 255, 255, 0.1)' }
+                },
+                x: {
+                    ticks: { color: textColor },
+                    grid: { display: false }
+                } 
+            },
+            plugins: { 
+                legend: { display: false }, 
+                tooltip: { callbacks: { label: (c) => `${c.dataset.label}: ${c.raw.toLocaleString()} ton` } } 
+            },
+            onClick: handleYearlyChartClick
+        };
+
+        const regionalChartOptions = {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { 
+                    position: 'top',
+                    labels: { color: textColor }
+                },
+                tooltip: { callbacks: { label: (c) => `${c.label || ''}: ${c.parsed}%` } }
+            }
+        };
+
+        // --- CHART RENDERING ---
+        const yearlyCtx = document.getElementById('yearlySalesChart').getContext('2d');
+        const yearlySalesChart = new Chart(yearlyCtx, { type: 'bar', data: yearlySalesData, options: yearlyChartOptions });
+
+        let regionalSalesChart = null; // Will be instantiated on demand
+
+        // --- INTERACTION LOGIC ---
+
+        function showRegionalView() {
+            yearlyView.classList.add('hidden');
+            regionalView.classList.remove('hidden');
+            mainSubtitle.classList.add('hidden');
+
+            // This timeout ensures the container is fully rendered with correct dimensions
+            // before the chart is created or resized. This is crucial for mobile devices.
+            setTimeout(() => {
+                if (!regionalSalesChart) {
+                    const regionalCtx = document.getElementById('regionalSalesChart').getContext('2d');
+                    regionalSalesChart = new Chart(regionalCtx, { type: 'doughnut', data: regionalSalesData2025, options: regionalChartOptions });
+                } else {
+                    regionalSalesChart.resize();
+                }
+            }, 100); // Increased timeout for more reliability
+        }
+
+        function showYearlyView() {
+            regionalView.classList.add('hidden');
+            yearlyView.classList.remove('hidden');
+            mainSubtitle.classList.remove('hidden');
+            
+            setTimeout(() => {
+                yearlySalesChart.resize();
+            }, 100);
+        }
+        
+        function handleYearlyChartClick(event, elements) {
+            if (elements.length > 0) {
+                const label = yearlySalesChart.data.labels[elements[0].index];
+                if (label === '2025') {
+                    showRegionalView();
+                }
+            }
+        }
+
+        backButton.addEventListener('click', showYearlyView);
+    </script>
+
+</body>
+</html>
