@@ -776,10 +776,12 @@
             </h2>
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 mt-4">
                 <div class="lg:col-span-2">
-                    <div class="bg-slate-50 p-4 rounded-lg shadow-lg mb-4 relative" style="height: 400px;">
-                        <canvas id="portfolioChart"></canvas>
+                    <div class="overflow-x-auto shadow-lg rounded-lg">
+                        <div class="relative bg-slate-50 p-4" style="height: 400px; min-width: 700px;">
+                            <canvas id="portfolioChart"></canvas>
+                        </div>
                     </div>
-                    <div id="chart-legend" class="flex flex-wrap justify-center items-center gap-x-6 gap-y-2 p-4">
+                    <div id="chart-legend" class="flex flex-wrap justify-center items-center gap-x-6 gap-y-2 p-4 mt-4">
                     </div>
                 </div>
 
