@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cuaderno de Juntas - Septiembre 2025</title>
+    <title>Cuaderno de Juntas - Agosto 2025</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
     <style>
@@ -264,7 +264,7 @@
         <!-- Header -->
         <header class="text-center mb-8">
             <h1 class="text-3xl md:text-4xl font-bold text-dark-blue">Cuaderno de Juntas</h1>
-            <p class="text-lg text-gray-500 mt-1">Cierre a Septiembre 2025 | Sesión de Junta No. 520</p>
+            <p class="text-lg text-gray-500 mt-1">Cierre a Agosto 2025 | Sesión de Junta No. 519</p>
         </header>
 
         <!-- Tabla de Contenido -->
@@ -863,7 +863,7 @@
                 <div class="mt-8">
                     <div class="bg-blue-subtle p-4 rounded-lg card mb-8">
                         <h4 class="font-semibold text-dark-blue">Conclusión y Tendencia</h4>
-                        <p class="text-sm text-dark-blue mt-2">La rotación de cartera se ha mantenido estable alrededor de los 75 días en los últimos meses. Es importante vigilar la relación entre el total de cartera, que ha mostrado una tendencia al alza, y las ventas mensuales para asegurar una gestión de cobranza eficiente y mantener la liquidez.</p>
+                        <p class="text-sm text-dark-blue mt-2">La rotación de cartera ha mostrado un incremento significativo en los últimos dos meses, situándose en 83 días en Agosto, por encima del promedio histórico. Aunque las ventas se mantienen robustas, este aumento en los días de cobro requiere atención para asegurar la gestión eficiente del capital de trabajo y mantener la liquidez.</p>
                     </div>
                 </div>
 
@@ -905,14 +905,25 @@
             lineaDias:   '#E53935', 
             cartera:     '#023047', 
             ventas:      '#219ebc', 
+            de1a30:      '#8ecae6',
+            de31a60:     '#ffb703',
+            de61a90:     '#fb8500',
+            de91a120:    '#e63946',
         };
         
         // DATOS ACTUALIZADOS
         const portfolioData = {
-            months: ["Jul-24", "Ago-24", "Sep-24", "Oct-24", "Nov-24", "Dic-24", "Ene-25", "Feb-25", "Mar-25", "Abr-25", "May-25", "Jun-25", "Jul-25", "Ago-25"],
-            diasCartera: [70, 72, 73, 71, 73, 73, 75, 69, 67, 75, 73, 75, 75, 75],
-            totalVentas: [30487, 30025, 29703, 32841, 30562, 27416, 32170, 32601, 33996, 31918, 29386, 27319, 31852, 27265],
-            totalCartera: [73362, 73328, 72983, 73230, 76011, 73477, 76174, 75507, 75562, 82087, 76879, 73816, 82213, 83549]
+            months: ["ago-24", "sep-24", "oct-24", "nov-24", "dic-24", "ene-25", "feb-25", "mar-25", "abr-25", "may-25", "jun-25", "jul-25", "ago-25"],
+            cartera: {
+                corriente: [63500, 62398, 63320, 65772, 60890, 62369, 64090, 63004, 65846, 61419, 55024, 63765, 65556],
+                de1a30:    [6832, 7525, 7014, 6568, 8421, 9742, 6933, 9297, 12569, 11097, 10952, 12474, 12765],
+                de31a60:   [2036, 1809, 2204, 2438, 2361, 2434, 2952, 1959, 1650, 2116, 5694, 3644, 2690],
+                de61a90:   [908, 1019, 419, 980, 1028, 878, 993, 491, 1229, 552, 830, 1322, 1797],
+                de91a120:  [52, 233, 273, 253, 777, 751, 539, 810, 793, 1695, 1315, 1007, 740],
+            },
+            diasCartera: [72, 73, 71, 73, 73, 74, 69, 67, 75, 73, 75, 84, 83],
+            totalVentas: [30025, 29703, 32841, 30562, 27416, 32170, 32601, 33996, 31918, 29386, 27319, 31852, 31288],
+            totalCartera: [73328, 72983, 73230, 76011, 73477, 76174, 75507, 75562, 82087, 76879, 73816, 82213, 83549]
         };
 
         const formatCurrency = (value) => new Intl.NumberFormat('es-CO', { style: 'decimal', maximumFractionDigits: 0 }).format(value);
@@ -922,20 +933,51 @@
         document.getElementById('kpi-total-val').textContent = `$${formatCurrency(portfolioData.totalCartera.slice(-1)[0])}`;
         document.getElementById('kpi-ventas-val').textContent = `$${formatCurrency(portfolioData.totalVentas.slice(-1)[0])}`;
         
-        const datasets = [
-             { 
+         const datasets = [
+            { 
                 type: 'bar', 
-                label: 'Total Cartera', 
-                data: portfolioData.totalCartera, 
+                label: 'Corriente', 
+                data: portfolioData.cartera.corriente, 
                 backgroundColor: colorPalette.cartera,
-                yAxisID: 'y'
+                stack: 'Cartera',
+                yAxisID: 'y',
+                order: 2
             },
             { 
                 type: 'bar', 
-                label: 'Total Ventas', 
-                data: portfolioData.totalVentas, 
-                backgroundColor: colorPalette.ventas,
-                yAxisID: 'y'
+                label: '1 a 30 días', 
+                data: portfolioData.cartera.de1a30, 
+                backgroundColor: colorPalette.de1a30,
+                stack: 'Cartera',
+                yAxisID: 'y',
+                order: 2
+            },
+            { 
+                type: 'bar', 
+                label: '31 a 60 días', 
+                data: portfolioData.cartera.de31a60, 
+                backgroundColor: colorPalette.de31a60,
+                stack: 'Cartera',
+                yAxisID: 'y',
+                order: 2
+            },
+             { 
+                type: 'bar', 
+                label: '61 a 90 días', 
+                data: portfolioData.cartera.de61a90, 
+                backgroundColor: colorPalette.de61a90,
+                stack: 'Cartera',
+                yAxisID: 'y',
+                order: 2
+            },
+            { 
+                type: 'bar', 
+                label: '> 90 días', 
+                data: portfolioData.cartera.de91a120, 
+                backgroundColor: colorPalette.de91a120,
+                stack: 'Cartera',
+                yAxisID: 'y',
+                order: 2
             },
             { 
                 type: 'line', 
@@ -955,7 +997,8 @@
                     color: colorPalette.lineaDias, 
                     font: { weight: 'bold' }, 
                     formatter: (value) => `${value}` 
-                } 
+                },
+                order: 1
             },
         ];
         
@@ -981,8 +1024,9 @@
                     datalabels: { display: false } 
                 },
                 scales: {
-                    x: { grid: { display: false }, ticks: {color: 'var(--color-dark-blue)', font: { size: 12 }}},
+                    x: { stacked:true, grid: { display: false }, ticks: {color: 'var(--color-dark-blue)', font: { size: 12 }}},
                     y: { 
+                        stacked:true,
                         beginAtZero: true, 
                         grid: { color: '#e5e7eb' }, 
                         ticks: { 
@@ -1002,7 +1046,7 @@
                         type: 'linear', 
                         position: 'right', 
                         min: 60, 
-                        max: 85, 
+                        max: 90, 
                         grid: { display: false }, 
                         ticks: { 
                             callback: value => value + ' días', 
@@ -1039,9 +1083,12 @@
         };
         
         tableBody.innerHTML = ''; // Limpiar
-        tableBody.innerHTML += createRow('Rot. Cartera Mensual Días', portfolioData.diasCartera, (val) => val.toFixed(0), 0);
-        tableBody.innerHTML += createRow('Total Ventas', portfolioData.totalVentas, formatCurrency, 1);
-        tableBody.innerHTML += createRow('Total Cartera', portfolioData.totalCartera, formatCurrency, 2);
+        let rowIndex = 0;
+        tableBody.innerHTML += createRow('Rot. Cartera Mensual Días', portfolioData.diasCartera, (val) => val.toFixed(0), rowIndex++);
+        tableBody.innerHTML += createRow('Total Ventas', portfolioData.totalVentas, formatCurrency, rowIndex++);
+        const totalCarteraRow = createRow('Total Cartera', portfolioData.totalCartera, formatCurrency, rowIndex++);
+        tableBody.innerHTML += totalCarteraRow.replace('<tr class="', '<tr class="font-bold ').replace('<td class="', '<td class="bg-gray-100 ');
+
     });
 </script>
 </body>
